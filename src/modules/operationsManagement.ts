@@ -481,9 +481,29 @@ function manageQuadAttackRoomOperation(op: Operation) {
             toughPerCreep = Math.ceil((op.toughHitsRequired * 0.3) / 100);
             for (let i = 0; i < toughPerCreep; i++) {
                 toughBody.push(TOUGH);
-                toughBody.push(MOVE);
             }
         }
+
+        const MOVE_NEEDED = 6; //assuming full move tier 3 boost
+        let moveBody = [];
+        for (let i = 0; i < MOVE_NEEDED; i++) {
+            moveBody.push(MOVE);
+        }
+
+        let healCount = 49 - toughPerCreep - MOVE_NEEDED;
+        let healBody = [];
+        for (let i = 0; i < healCount; i++) {
+            healBody.push(HEAL);
+        }
+
+        let workCount = 50 - toughPerCreep - MOVE_NEEDED;
+        let workBody = [];
+        for (let i = 0; i < workCount; i++) {
+            workBody.push(WORK);
+        }
+
+        const ATTACKER_BODY = [...toughBody, ...workBody, ...moveBody];
+        const HEALER_BODY = [RANGED_ATTACK, ...toughBody, ...moveBody, ...healBody];
 
         const squadId = 's4' + Game.shard.name.slice(-1) + originRoom.name + Game.time.toString().slice(-4);
         const hasSquadLeader =
@@ -498,10 +518,7 @@ function manageQuadAttackRoomOperation(op: Operation) {
         if (!hasSquadLeader) {
             Memory.spawnAssignments.push({
                 designee: originRoom.name,
-                body: [
-                    ...toughBody,
-                    ...PopulationManagement.createPartsArray([WORK, MOVE], originRoom.energyCapacityAvailable, 25 - toughPerCreep),
-                ].sort((bodyA, bodyB) => sortByBodyPart(MOVE, bodyA, bodyB)),
+                body: ATTACKER_BODY,
                 spawnOpts: {
                     memory: {
                         role: Role.SQUAD_ATTACKER,
@@ -513,7 +530,7 @@ function manageQuadAttackRoomOperation(op: Operation) {
                             squadMemberType: SquadMemberType.SQUAD_LEADER,
                         },
                     },
-                    boosts: [BoostType.DISMANTLE, BoostType.TOUGH],
+                    boosts: [BoostType.DISMANTLE, BoostType.TOUGH, BoostType.MOVE],
                 },
             });
         }
@@ -530,10 +547,7 @@ function manageQuadAttackRoomOperation(op: Operation) {
         if (!hasSecondSquadLeader) {
             Memory.spawnAssignments.push({
                 designee: originRoom.name,
-                body: [
-                    ...toughBody,
-                    ...PopulationManagement.createPartsArray([WORK, MOVE], originRoom.energyCapacityAvailable, 25 - toughPerCreep),
-                ].sort((bodyA, bodyB) => sortByBodyPart(MOVE, bodyA, bodyB)),
+                body: ATTACKER_BODY,
                 spawnOpts: {
                     memory: {
                         role: Role.SQUAD_ATTACKER,
@@ -545,7 +559,7 @@ function manageQuadAttackRoomOperation(op: Operation) {
                             squadMemberType: SquadMemberType.SQUAD_SECOND_LEADER,
                         },
                     },
-                    boosts: [BoostType.DISMANTLE, BoostType.TOUGH],
+                    boosts: [BoostType.DISMANTLE, BoostType.TOUGH, BoostType.MOVE],
                 },
             });
         }
@@ -562,12 +576,7 @@ function manageQuadAttackRoomOperation(op: Operation) {
         if (!hasSquadFollower) {
             Memory.spawnAssignments.push({
                 designee: originRoom.name,
-                body: [
-                    RANGED_ATTACK,
-                    MOVE,
-                    ...toughBody,
-                    ...PopulationManagement.createPartsArray([HEAL, MOVE], originRoom.energyCapacityAvailable - 200, 24 - toughPerCreep),
-                ],
+                body: HEALER_BODY,
                 spawnOpts: {
                     memory: {
                         role: Role.SQUAD_ATTACKER,
@@ -579,7 +588,7 @@ function manageQuadAttackRoomOperation(op: Operation) {
                             squadMemberType: SquadMemberType.SQUAD_FOLLOWER,
                         },
                     },
-                    boosts: [BoostType.HEAL, BoostType.TOUGH],
+                    boosts: [BoostType.HEAL, BoostType.TOUGH, BoostType.MOVE],
                 },
             });
         }
@@ -596,12 +605,7 @@ function manageQuadAttackRoomOperation(op: Operation) {
         if (!hasSecondSquadFollower) {
             Memory.spawnAssignments.push({
                 designee: originRoom.name,
-                body: [
-                    RANGED_ATTACK,
-                    MOVE,
-                    ...toughBody,
-                    ...PopulationManagement.createPartsArray([HEAL, MOVE], originRoom.energyCapacityAvailable - 200, 24 - toughPerCreep),
-                ],
+                body: HEALER_BODY,
                 spawnOpts: {
                     memory: {
                         role: Role.SQUAD_ATTACKER,
@@ -613,7 +617,7 @@ function manageQuadAttackRoomOperation(op: Operation) {
                             squadMemberType: SquadMemberType.SQUAD_SECOND_FOLLOWER,
                         },
                     },
-                    boosts: [BoostType.HEAL, BoostType.TOUGH],
+                    boosts: [BoostType.HEAL, BoostType.TOUGH, BoostType.MOVE],
                 },
             });
         }
