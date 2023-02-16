@@ -138,10 +138,14 @@ export class SquadManagement {
                 range = 1; // Go close to the structure to enable rangedMassAttack
             }
 
-            if (Game.flags.squadMove?.pos?.roomName !== this.assignment && this.faceTargetWhenInRange(target, range)) {
+            if (Game.flags.squadMove?.pos?.roomName !== this.assignment && this.faceTargetWhenInRange(target as Structure, range)) {
                 return;
             }
             const squadPath = this.findPath(target, range);
+
+            console.log(squadPath.path.length);
+            //@ts-ignore
+            this.squadLeader.room.visual.poly(squadPath.path, { stroke: '#fff', strokeWidth: 0.15, opacity: 0.8, lineStyle: 'dotted' });
 
             if (!squadPath && this.squadLeader.memory._m.path) {
                 this.moveSquad();
@@ -158,6 +162,9 @@ export class SquadManagement {
 
     public faceTargetWhenInRange(target: Structure, range: number): boolean {
         const obstacle = this.getObstacleStructure();
+
+        obstacle.room.visual.text('⭕', obstacle.pos);
+
         if ((target && this.squadLeader.pos.getRangeTo(target) <= range) || (obstacle && this.squadLeader.pos.getRangeTo(obstacle) <= range)) {
             if (this.squadSecondLeader.pos.getRangeTo(target) <= range || (obstacle && this.squadSecondLeader.pos.getRangeTo(obstacle) <= range)) {
                 return false; // TODO: Enable fleeing (all creeps can just move in the same direction no need to rotate)
@@ -355,8 +362,8 @@ export class SquadManagement {
         }
     }
 
-    private findPathingTarget(): Structure {
-        let target;
+    private findPathingTarget(): Structure | Creep {
+        let target: Structure | Creep;
         if (this.targetStructure && Game.getObjectById(this.targetStructure)) {
             target = Game.getObjectById(this.targetStructure);
         } else if (this.squadLeader.pos.roomName === this.assignment) {
@@ -391,8 +398,10 @@ export class SquadManagement {
             }
         }
 
+        target.room.visual.text('❌', target.pos);
+
         if (target) {
-            this.targetStructure = target?.id;
+            this.targetStructure = target?.id as Id<Structure<StructureConstant>>;
         } else {
             target = this.findHostileCreep();
         }
