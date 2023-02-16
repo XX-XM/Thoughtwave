@@ -484,7 +484,7 @@ function manageQuadAttackRoomOperation(op: Operation) {
             }
         }
 
-        const MOVE_NEEDED = 6; //assuming full move tier 3 boost
+        const MOVE_NEEDED = 10; //assuming full move tier 3 boost
         let moveBody = [];
         for (let i = 0; i < MOVE_NEEDED; i++) {
             moveBody.push(MOVE);
