@@ -473,7 +473,7 @@ function manageQuadAttackRoomOperation(op: Operation) {
 
         let toughBoosts = getResourceBoostsAvailable(originRoom, [BoostType.TOUGH]);
         let toughPerCreep = 0;
-        let toughBody = [];
+        let toughBody: BodyPartConstant[] = [];
         if (
             toughBoosts[BoostType.TOUGH].find((boost) => boost.resource === RESOURCE_CATALYZED_GHODIUM_ALKALIDE).amount >=
             Math.ceil((op.toughHitsRequired * 0.3) / 100) * 4
@@ -485,25 +485,32 @@ function manageQuadAttackRoomOperation(op: Operation) {
         }
 
         const MOVE_NEEDED = 10; //assuming full move tier 3 boost
-        let moveBody = [];
+        let moveBody: BodyPartConstant[] = [];
         for (let i = 0; i < MOVE_NEEDED; i++) {
             moveBody.push(MOVE);
         }
 
+        const HEAL_NEEDED = 15; // 12 tier 3 boosted heal * 2 outpaces tower damage. add a bit more for additional incoming damage
         let healCount = 49 - toughPerCreep - MOVE_NEEDED;
-        let healBody = [];
-        for (let i = 0; i < healCount; i++) {
+        let healBody: BodyPartConstant[] = [];
+        for (let i = 0; i < HEAL_NEEDED; i++) {
             healBody.push(HEAL);
         }
 
+        const RANGED_NEEDED = 50 - toughPerCreep - MOVE_NEEDED - HEAL_NEEDED; //how many leftover spots we can allocate to ranged damage
+        let rangedBody: BodyPartConstant[] = [];
+        for (let i = 0; i < RANGED_NEEDED; i++) {
+            rangedBody.push(RANGED_ATTACK);
+        }
+
         let workCount = 50 - toughPerCreep - MOVE_NEEDED;
-        let workBody = [];
+        let workBody: BodyPartConstant[] = [];
         for (let i = 0; i < workCount; i++) {
             workBody.push(WORK);
         }
 
         const ATTACKER_BODY = [...toughBody, ...workBody, ...moveBody];
-        const HEALER_BODY = [RANGED_ATTACK, ...toughBody, ...moveBody, ...healBody];
+        const HEALER_BODY = [...toughBody, ...moveBody, ...rangedBody, ...healBody];
 
         const squadId = 's4' + Game.shard.name.slice(-1) + originRoom.name + Game.time.toString().slice(-4);
         const hasSquadLeader =
@@ -588,7 +595,7 @@ function manageQuadAttackRoomOperation(op: Operation) {
                             squadMemberType: SquadMemberType.SQUAD_FOLLOWER,
                         },
                     },
-                    boosts: [BoostType.HEAL, BoostType.TOUGH, BoostType.MOVE],
+                    boosts: [BoostType.HEAL, BoostType.TOUGH, BoostType.MOVE, BoostType.RANGED_ATTACK],
                 },
             });
         }
@@ -617,7 +624,7 @@ function manageQuadAttackRoomOperation(op: Operation) {
                             squadMemberType: SquadMemberType.SQUAD_SECOND_FOLLOWER,
                         },
                     },
-                    boosts: [BoostType.HEAL, BoostType.TOUGH, BoostType.MOVE],
+                    boosts: [BoostType.HEAL, BoostType.TOUGH, BoostType.MOVE, BoostType.RANGED_ATTACK],
                 },
             });
         }
