@@ -143,9 +143,7 @@ export class SquadManagement {
             }
             const squadPath = this.findPath(target, range);
 
-            console.log(squadPath.path.length);
-            //@ts-ignore
-            this.squadLeader.room.visual.poly(squadPath.path, { stroke: '#fff', strokeWidth: 0.15, opacity: 0.8, lineStyle: 'dotted' });
+            this.squadLeader.room.visual.poly(squadPath?.path, { stroke: '#fff', strokeWidth: 0.15, opacity: 0.8, lineStyle: 'dotted' });
 
             if (!squadPath && this.squadLeader.memory._m.path) {
                 this.moveSquad();
@@ -163,7 +161,7 @@ export class SquadManagement {
     public faceTargetWhenInRange(target: Structure, range: number): boolean {
         const obstacle = this.getObstacleStructure();
 
-        obstacle.room.visual.text('⭕', obstacle.pos);
+        obstacle?.room.visual.text('⭕', obstacle.pos);
 
         if ((target && this.squadLeader.pos.getRangeTo(target) <= range) || (obstacle && this.squadLeader.pos.getRangeTo(obstacle) <= range)) {
             if (this.squadSecondLeader.pos.getRangeTo(target) <= range || (obstacle && this.squadSecondLeader.pos.getRangeTo(obstacle) <= range)) {
