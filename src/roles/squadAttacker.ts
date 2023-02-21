@@ -50,18 +50,15 @@ export class SquadAttacker extends CombatCreep {
     private findPriorityAttackTarget(range: number, sq: SquadManagement) {
         const areaInRange = Pathing.getArea(this.pos, range);
         const lookAtArea = this.room.lookAtArea(areaInRange.top, areaInRange.left, areaInRange.bottom, areaInRange.right, true);
-        const hostileCreep = lookAtArea.filter(
-            (lookObject) =>
-                lookObject.type === LOOK_CREEPS && lookObject.creep?.owner?.username !== this.owner.username && !lookObject.creep?.spawning
+        const hostileCreeps = lookAtArea.map((lookObject) => {
+            if (lookObject.type === LOOK_CREEPS && lookObject.creep?.owner?.username !== this.owner.username && !lookObject.creep?.spawning)
+                return lookObject.creep;
+        });
+        const creep = hostileCreeps.find(
+            (creep) => !creep?.pos.lookFor(LOOK_STRUCTURES).some((structure) => structure.structureType === STRUCTURE_RAMPART)
         );
-        const unprotectedHostileCreep = lookAtArea.filter(
-            (lookObject) =>
-                lookObject.type === LOOK_STRUCTURES &&
-                lookObject.structure.structureType !== STRUCTURE_RAMPART &&
-                hostileCreep.some((look) => look.creep.pos.x === lookObject.structure.pos.x && look.creep.pos.y === lookObject.structure.pos.y)
-        );
-        if (unprotectedHostileCreep.length) {
-            return unprotectedHostileCreep[0].creep;
+        if (creep) {
+            return creep;
         }
 
         if (this.pos.roomName === sq.assignment && !sq.isFleeing) {
