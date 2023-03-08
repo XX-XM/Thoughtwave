@@ -462,7 +462,7 @@ export class SquadManagement {
             delete this.squadLeader.memory._m.path;
         }
         if (target && !this.squadLeader.memory._m.path) {
-            let options: TravelToOpts = { exitCost: 50, maxRooms: 1, efficiency: 10 };
+            let options: TravelToOpts = { exitCost: 50, maxRooms: 1, efficiency: 10, ignoreCreeps: true };
             if (!this.isSquadOnExit()) {
                 options.customMatrixCosts = matrix;
             }
@@ -654,13 +654,13 @@ export class SquadManagement {
                         roomName,
                         orientation,
                         anchor,
-                        false,
+                        true,
                         Math.floor(cost / 5)
                     );
                 });
         }
         // Orientation based matrix stuff
-        const enableVisuals = false;
+        const enableVisuals = true;
         for (let y = minY; y < maxY; y++) {
             for (let x = minX; x < maxX; x++) {
                 const tile = terrain.get(x, y);
@@ -688,7 +688,7 @@ export class SquadManagement {
                             SquadManagement.showVisuals(enableVisuals, new RoomPosition(0, y, roomName));
                         }
                     } else {
-                        this.directionalCostMatrix(customCostMatrix, terrain, x, y, roomName, orientation, anchor, false);
+                        this.directionalCostMatrix(customCostMatrix, terrain, x, y, roomName, orientation, anchor, true);
                     }
                 }
             }
