@@ -206,7 +206,7 @@ function getRoomResourceNeeds(room: Room): ResourceConstant[] {
     let needs = [];
     const ALL_MINERALS_AND_COMPOUNDS = [...Object.keys(MINERAL_MIN_AMOUNT), ...Object.keys(REACTION_TIME)] as ResourceConstant[];
     ALL_MINERALS_AND_COMPOUNDS.forEach((resource) => {
-        if (getResourceAmount(room, resource) < 5000) {
+        if (getResourceAmount(room, resource) < (resource[0] == 'X' && resource.length > 1 ? 20000 : 5000)) {
             needs.push(resource);
         }
     });
@@ -239,15 +239,7 @@ export function getExtraResources(room: Room): ResourceConstant[] {
     const ALL_MINERALS_AND_COMPOUNDS = [...Object.keys(MINERAL_MIN_AMOUNT), ...Object.keys(REACTION_TIME)] as ResourceConstant[];
     ALL_MINERALS_AND_COMPOUNDS.forEach((resource) => {
         let maxResourceAmount = 10000;
-        // Increase Defensive Resource Amount
-        if (resource === RESOURCE_CATALYZED_UTRIUM_ACID) {
-            maxResourceAmount = 20000;
-        }
-        if (
-            resource !== RESOURCE_CATALYZED_UTRIUM_ACID &&
-            getResourceAmount(room, resource) > maxResourceAmount &&
-            room.terminal.store[resource] >= 5000
-        ) {
+        if ((resource[0] !== 'X' || resource.length === 1) && getResourceAmount(room, resource) > maxResourceAmount) {
             extraResources.push(resource);
         }
     });
