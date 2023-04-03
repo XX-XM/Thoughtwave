@@ -67,14 +67,14 @@ export class PopulationManagement {
             canSupportAnotherWorker &&
             !INCOMING_NUKE &&
             !hasUpgrader &&
-            (!roomNeedsConstruction || workers.length > 0) &&
+            !roomNeedsConstruction &&
             !roomNeedsCoreStructures(spawn.room);
 
         const WORKER_PART_BLOCK = [WORK, CARRY, MOVE];
         let creepLevelCap = 16;
         if (spawnUpgrader) {
             options.memory.role = Role.UPGRADER;
-            options.boosts = [BoostType.UPGRADE];
+            options.boosts = spawn.room.controller.level < 8 ? [BoostType.UPGRADE] : [];
             let result: ScreepsReturnCode;
 
             if (spawn.room.upgraderLink) {
@@ -450,7 +450,13 @@ export class PopulationManagement {
      * @param opts normal spawnOptions
      * @returns Creep Body Part Array
      */
-    public static createDynamicCreepBody(room: Room, parts: BodyPartConstant[], damageNeeded: number, healNeeded: number, opts?: SpawnOptions) {
+    public static createDynamicCreepBody(
+        room: Room,
+        parts: BodyPartConstant[],
+        damageNeeded: number,
+        healNeeded: number,
+        opts?: SpawnOptions
+    ): BodyPartConstant[] {
         const getSortValue = (part: BodyPartConstant): number => (part === MOVE ? 2 : part === TOUGH ? 1 : 0);
         parts = parts.filter((part, index) => parts.indexOf(part) === index).sort((a, b) => getSortValue(b) - getSortValue(a));
         let energyAvailable = room.energyCapacityAvailable;
@@ -829,6 +835,42 @@ export class PopulationManagement {
             };
 
             body = body.sort((a, b) => getSortValue(b) - getSortValue(a));
+        }
+
+        // Prioritize center and miner sources (all others are randomly selected)
+        if (spawn.room.stamps) {
+            const prioritizedExtensions = spawn.room.stamps.extension.filter(
+                (extensionDetail) => extensionDetail.type?.includes('source') || extensionDetail.type === 'center'
+            );
+            opts.energyStructures = spawn.room
+                .find(FIND_MY_STRUCTURES)
+                .filter((structure) => structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION)
+                .sort((structA, structB) => {
+                    if (structA.structureType === STRUCTURE_SPAWN) {
+                        return -1;
+                    }
+
+                    if (structB.structureType === STRUCTURE_SPAWN) {
+                        return 1;
+                    }
+
+                    if (
+                        prioritizedExtensions.some(
+                            (extensionDetail) => extensionDetail.pos.x === structA.pos.x && extensionDetail.pos.y === structA.pos.y
+                        )
+                    ) {
+                        return -1;
+                    }
+                    if (
+                        prioritizedExtensions.some(
+                            (extensionDetail) => extensionDetail.pos.x === structB.pos.x && extensionDetail.pos.y === structB.pos.y
+                        )
+                    ) {
+                        return 1;
+                    }
+
+                    return 0;
+                }) as Array<StructureSpawn | StructureExtension>;
         }
 
         let result = spawn.spawnCreep(body, name, opts);

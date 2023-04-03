@@ -10,7 +10,7 @@ interface Memory {
     marketBlacklist?: string[]; //player names we don't want to sell to
     blacklistedRooms?: string[]; //room names we don't sell to
     visionRequests?: { [id: string]: VisionRequest };
-    remoteSourceClaims?: { [sourcePos: string]: { claimant: string; netIncome: number } }; //map of potential remote rooms to rooms intending to claim them and their anticipated net income - higher income gets priority
+    remoteSourceClaims?: { [sourcePos: string]: { claimant: string; estimatedIncome: number } }; //map of potential remote rooms to rooms intending to claim them and their anticipated net income - higher income gets priority
     remoteSourceAssignments?: { [sourcePos: string]: RemoteAssignmentData }; //maps sources in other rooms to owned rooms mining them
     debug?: DebugSettings;
 }
@@ -68,14 +68,25 @@ interface OperationOpts {
     portalLocations?: string[];
     forcedDestinations?: string[];
     pathCost?: number;
+    disableLogging?: boolean;
 }
 
 interface OriginOpts {
+    maxThreatLevel?: HomeRoomThreatLevel;
     minEnergyStatus?: EnergyStatus;
     maxLinearDistance?: number;
-    multipleSpawns?: boolean;
+    minSpawnCount?: number;
     needsBoost?: boolean;
     selectionCriteria?: OriginCriteria;
+    operationCriteria?: OperationCriteria;
+    ignoreTerrain?: boolean;
+    ignoreRoomData?: boolean; // TODO: implement this to set highways to 1?
+}
+
+interface OperationCriteria {
+    type: OperationType;
+    maxCount: number;
+    stage?: OperationStage;
 }
 
 interface OriginResult {
@@ -138,6 +149,7 @@ const enum OperationType {
     REMOTE_BUILD,
     CLEAN,
     ADD_REMOTE_MINING,
+    POWER_BANK,
 }
 
 const enum OperationStage {

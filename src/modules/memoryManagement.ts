@@ -95,7 +95,10 @@ function handleDeadCreep(deadCreepName: string) {
         if (deadCreepMemory.role === Role.MINER && !deadCreepMemory.hasTTLReplacement) {
             Memory.rooms[deadCreepMemory.room].miningAssignments[deadCreepMemory.assignment] = AssignmentStatus.UNASSIGNED;
         }
-        if (deadCreepMemory.role === Role.REMOTE_MINER) {
+        if (
+            deadCreepMemory.role === Role.REMOTE_MINER &&
+            Memory.rooms[deadCreepMemory.room].remoteSources[deadCreepMemory.assignment].miner === deadCreepName
+        ) {
             Memory.rooms[deadCreepMemory.room].remoteSources[deadCreepMemory.assignment].miner = AssignmentStatus.UNASSIGNED;
         }
         if (deadCreepMemory.role === Role.GATHERER) {
@@ -115,7 +118,10 @@ function handleDeadCreep(deadCreepName: string) {
         if (deadCreepMemory.role === Role.MINERAL_MINER) {
             Memory.rooms[deadCreepMemory.room].mineralMiningAssignments[deadCreepMemory.assignment] = AssignmentStatus.UNASSIGNED;
         }
-        if (deadCreepMemory.role === Role.KEEPER_EXTERMINATOR && Memory.remoteData[deadCreepMemory.assignment]) {
+        if (
+            deadCreepMemory.role === Role.KEEPER_EXTERMINATOR &&
+            Memory.remoteData[deadCreepMemory.assignment]?.keeperExterminator === deadCreepName
+        ) {
             Memory.remoteData[deadCreepMemory.assignment].keeperExterminator = AssignmentStatus.UNASSIGNED;
         }
         if (deadCreepMemory.role === Role.REMOTE_MINERAL_MINER && Memory.remoteData[deadCreepMemory.assignment]) {
@@ -260,17 +266,17 @@ function initMissingMemoryValues() {
 }
 
 function mangeVisionRequests() {
-    let observerRooms = Object.keys(Game.rooms).filter((room) => Game.rooms[room].observer);
+    const observerRooms = Object.keys(Game.rooms).filter((room) => Game.rooms[room]?.observer);
 
     Object.keys(Memory.visionRequests).forEach((requestId) => {
-        let request = Memory.visionRequests[requestId];
+        const request = Memory.visionRequests[requestId];
         if (request.completed) {
             delete Memory.visionRequests[requestId];
             return;
         }
 
         if (!request.assigned) {
-            let suitableRoom = observerRooms.find((room) => Game.map.getRoomLinearDistance(request.targetRoom, room) <= 5);
+            let suitableRoom = observerRooms.find((room) => Game.map.getRoomLinearDistance(request.targetRoom, room) <= 10);
             if (suitableRoom) {
                 if (!Memory.rooms[suitableRoom].visionRequests) {
                     Memory.rooms[suitableRoom].visionRequests = [requestId];

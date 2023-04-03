@@ -127,9 +127,9 @@ export function calculateRemoteSourceStats(source: string, roomName: string, ign
         road: roadStats.road,
     };
 
-    for (let [key, value] of Object.entries(stats)) {
-        if (key !== 'road') console.log(`${key}: ${value}`);
-    }
+    // for (let [key, value] of Object.entries(stats)) {
+    //     if (key !== 'road') console.log(`${key}: ${value}`);
+    // }
 
     return stats;
 }
@@ -306,7 +306,7 @@ export function findSuitableRemoteSource(roomName: string, noKeeperRooms: boolea
         options = options.filter((option) => option.stats?.sourceSize === 3000);
     }
 
-    options = options.filter((option) => option.stats.estimatedIncome >= 750);
+    options = options.filter((option) => option.stats.estimatedIncome / option.stats.gathererCount >= 750);
 
     //prefer central rooms over other rooms and prefer closer to farther
     options.sort((a, b) => b.stats.estimatedIncome - a.stats.estimatedIncome);
